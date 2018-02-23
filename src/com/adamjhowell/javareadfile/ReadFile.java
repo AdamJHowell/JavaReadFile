@@ -15,6 +15,11 @@ public class ReadFile
 	private static final Logger LOGGER = Logger.getLogger( ReadFile.class.getName() );
 
 
+	/**
+	 * main requires the name of a text file to be passed to it from the command line.
+	 *
+	 * @param args element zero must be the name of a text file to read.
+	 */
 	@java.lang.SuppressWarnings( "squid:S106" )
 	public static void main( String[] args )
 	{
@@ -36,7 +41,7 @@ public class ReadFile
 
 	/**
 	 * readFile() reads a file and returns each uncommented line with a length greater than 0.
-	 * The class should have a private static boolean DEBUG set to either true or false.
+	 * The class should have a logger named LOGGER (from java.util.logging.Logger).
 	 *
 	 * @param inFileName a string representing the file to open.
 	 * @return an ArrayList<String> containing every non-empty line from the input file, or null if the file could not be opened.
