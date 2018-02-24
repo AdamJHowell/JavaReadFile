@@ -10,9 +10,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
-public class ReadFile
+public class JavaReadFile
 {
-	private static final Logger LOGGER = Logger.getLogger( ReadFile.class.getName() );
+	private static final Logger LOGGER = Logger.getLogger( JavaReadFile.class.getName() );
 
 
 	/**
