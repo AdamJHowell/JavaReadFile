@@ -1,9 +1,9 @@
 package com.adamjhowell.javareadfile;
 
 
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -12,24 +12,32 @@ import java.util.logging.Logger;
 
 public class JavaReadFile
 {
-	private static final Logger LOGGER = Logger.getLogger( JavaReadFile.class.getName() );
+	private static final Logger MAIN_LOGGER = Logger.getLogger( JavaReadFile.class.getName() );
 
 
 	/**
-	 * main requires the name of a text file to be passed to it from the command line.
+	 * This is a simple driver to read in a text file and write the contents to the screen.
+	 * Note that this will read the entire file into memory.  So this should not be used for very large files.
 	 *
 	 * @param args element zero must be the name of a text file to read.
 	 */
 	@java.lang.SuppressWarnings( "squid:S106" )
 	public static void main( String[] args )
 	{
-		LOGGER.setLevel( Level.WARNING );
+		MAIN_LOGGER.setLevel( Level.WARNING );
 		if( args.length > 0 )
 		{
 			List<String> inAl = readFile( args[0] );
-			for( String line : inAl )
+			if( !inAl.isEmpty() )
 			{
-				System.out.println( line );
+				for( String line : inAl )
+				{
+					System.out.println( line );
+				}
+			}
+			else
+			{
+				System.out.println( "The input file: " + args[0] + ", was empty or did not exist." );
 			}
 		}
 		else
@@ -41,64 +49,69 @@ public class JavaReadFile
 
 	/**
 	 * readFile() reads a file and returns each uncommented line with a length greater than 0.
-	 * The class should have a logger named LOGGER (from java.util.logging.Logger).
+	 * The class should have a logger named MAIN_LOGGER (from java.util.logging.Logger).
 	 *
 	 * @param inFileName a string representing the file to open.
 	 * @return an ArrayList<String> containing every non-empty line from the input file, or null if the file could not be opened.
 	 */
-
 	private static List<String> readFile( String inFileName )
 	{
-		// commentString can be changed to whatever you wish to use as a comment indicator.  When this String is encountered, the rest of the line will be ignored.
+		// commentString can be changed to whatever you wish to use as a comment indicator.
+		// When it is encountered, commentString and everything to the right of it will be ignored.
 		String commentString = "//";
-		List<String> inAl = new ArrayList<>();
+		List<String> inAl;
+		MAIN_LOGGER.log( Level.FINEST, "readFile() is opening {0}, and using {1} as a comment marker.", new Object[]{ inFileName, commentString } );
 
-		// Attempt to open the file using "try with resources", to ensure it will close automatically.
-		try( BufferedReader inBR = new BufferedReader( new FileReader( inFileName ) ) )
+		// Attempt to open the file using the Java 8 Files class.  This ensures it will close automatically.
+		try
 		{
-			String line;
-			int inputLineCount = 0;
+			inAl = Files.readAllLines( Paths.get( inFileName ) );
+		}
+		catch( IOException e )
+		{
+			MAIN_LOGGER.log( Level.SEVERE, e.getLocalizedMessage() );
+			MAIN_LOGGER.log( Level.SEVERE, "Returning an empty ArrayList() due to an IO Exception." );
+			// Return an empty ArrayList to avoid NPEs in the calling method.
+			return new ArrayList<>();
+		}
+		List<String> outAL = new ArrayList<>();
+		int inputLineCount = 0;
 
-			// Read lines until EOF.
-			while( ( line = inBR.readLine() ) != null )
+		// Read lines until EOF.
+		for( String line : inAl )
+		{
+			inputLineCount++;
+			// Check for comments.
+			if( line.contains( commentString ) )
 			{
-				inputLineCount++;
-				// Check for comments.
-				if( line.contains( commentString ) )
-				{
-					// Grab all of the text up to the comment.
-					String subString = line.substring( 0, line.indexOf( commentString ) );
+				// Grab all of the text up to the comment.
+				String subString = line.substring( 0, line.indexOf( commentString ) ).trim();
 
-					// Only add lines with content.
-					if( subString.length() > 0 )
-					{
-						// Add the line to our ArrayList.
-						inAl.add( subString );
-					}
-					else
-					{
-						LOGGER.log( Level.FINEST, "readFile() is skipping a line that has only comments at row  %s", inputLineCount );
-					}
+				// Only add lines with content.
+				if( subString.length() > 0 )
+				{
+					// Add the line to our ArrayList.
+					outAL.add( subString );
 				}
 				else
 				{
-					// Ignore empty lines and lines that contain only whitespace.
-					if( line.length() > 0 && !line.matches( "\\s+" ) )
-					{
-						// Add the line to our ArrayList.
-						inAl.add( line.trim() );
-					}
-					else
-					{
-						LOGGER.log( Level.FINEST, "readFile is skipping a zero length line at row %s", inputLineCount );
-					}
+					MAIN_LOGGER.log( Level.FINEST, "readFile() is skipping a line that has only comments at row {0}", inputLineCount );
+				}
+			}
+			else
+			{
+				// Ignore empty lines and lines that contain only whitespace.
+				if( line.length() > 0 && !line.matches( "\\s+" ) )
+				{
+					// Add the line to our ArrayList.
+					outAL.add( line.trim() );
+				}
+				else
+				{
+					MAIN_LOGGER.log( Level.FINEST, "readFile() is skipping a zero length line at row {0}", inputLineCount );
 				}
 			}
 		}
-		catch( IOException ioe )
-		{
-			ioe.getMessage();
-		}
-		return inAl;
+		return outAL;
 	} // End of readFile() method.
 }
