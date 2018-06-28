@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="module_readfile" default="compile.module.readfile">
+  <dirname property="module.readfile.basedir" file="${ant.file.module_readfile}"/>
+  
+  <property name="module.jdk.home.readfile" value="${project.jdk.home}"/>
+  <property name="module.jdk.bin.readfile" value="${project.jdk.bin}"/>
+  <property name="module.jdk.classpath.readfile" value="${project.jdk.classpath}"/>
+  
+  <property name="compiler.args.readfile" value="-encoding UTF-8 -source 8 -target 8 ${compiler.args}"/>
+  
+  <property name="readfile.output.dir" value="${module.readfile.basedir}/out/production/ReadFile"/>
+  <property name="readfile.testoutput.dir" value="${module.readfile.basedir}/out/test/ReadFile"/>
+  
+  <path id="readfile.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="readfile.module.production.classpath">
+    <path refid="${module.jdk.classpath.readfile}"/>
+  </path>
+  
+  <path id="readfile.runtime.production.module.classpath">
+    <pathelement location="${readfile.output.dir}"/>
+  </path>
+  
+  <path id="readfile.module.classpath">
+    <path refid="${module.jdk.classpath.readfile}"/>
+    <pathelement location="${readfile.output.dir}"/>
+  </path>
+  
+  <path id="readfile.runtime.module.classpath">
+    <pathelement location="${readfile.testoutput.dir}"/>
+    <pathelement location="${readfile.output.dir}"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.readfile">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.readfile">
+    <patternset refid="excluded.from.module.readfile"/>
+  </patternset>
+  
+  <path id="readfile.module.sourcepath">
+    <dirset dir="${module.readfile.basedir}">
+      <include name="src"/>
+    </dirset>
+  </path>
+  
+  
+  <target name="compile.module.readfile" depends="compile.module.readfile.production,compile.module.readfile.tests" description="Compile module ReadFile"/>
+  
+  <target name="compile.module.readfile.production" depends="register.custom.compilers" description="Compile module ReadFile; production classes">
+    <mkdir dir="${readfile.output.dir}"/>
+    <javac2 destdir="${readfile.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.readfile}/javac">
+      <compilerarg line="${compiler.args.readfile}"/>
+      <bootclasspath refid="readfile.module.bootclasspath"/>
+      <classpath refid="readfile.module.production.classpath"/>
+      <src refid="readfile.module.sourcepath"/>
+      <patternset refid="excluded.from.compilation.readfile"/>
+    </javac2>
+    
+    <copy todir="${readfile.output.dir}">
+      <fileset dir="${module.readfile.basedir}/src">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="compile.module.readfile.tests" depends="register.custom.compilers,compile.module.readfile.production" description="compile module ReadFile; test classes" unless="skip.tests"/>
+  
+  <target name="clean.module.readfile" description="cleanup module">
+    <delete dir="${readfile.output.dir}"/>
+    <delete dir="${readfile.testoutput.dir}"/>
+  </target>
+</project>
