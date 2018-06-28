@@ -69,8 +69,8 @@ public class JavaReadFile
 		}
 		catch( IOException e )
 		{
-			MAIN_LOGGER.log( Level.WARNING, "Error opening input file: " + e.getLocalizedMessage() );
-			MAIN_LOGGER.log( Level.WARNING, "Returning an empty ArrayList() due to an IO Exception." );
+			MAIN_LOGGER.log( Level.WARNING, "IO Exception when opening input file: " + inFileName );
+			MAIN_LOGGER.log( Level.WARNING, e.getLocalizedMessage() );
 			// Return an empty ArrayList to avoid NPEs in the calling method.
 			return new ArrayList<>();
 		}
