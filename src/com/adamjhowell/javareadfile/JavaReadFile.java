@@ -48,18 +48,23 @@ public class JavaReadFile
 
 
 	/**
-	 * readFile() reads a file and returns each uncommented line with a length greater than 0.
+	 * readFile() opens a file and returns an ArrayList of Strings.
+	 * Empty lines are ignored.
+	 * Commented substrings are ignored.
+	 * Zero-length lines are ignored.
 	 * The class should have a logger named MAIN_LOGGER (from java.util.logging.Logger).
 	 *
 	 * @param inFileName a string representing the file to open.
-	 * @return an ArrayList<String> containing every non-empty line from the input file, or null if the file could not be opened.
+	 * @return an ArrayList<String> containing every significant line from the input file, or an empty ArrayList.
 	 */
 	private static List<String> readFile( String inFileName )
 	{
 		// commentString can be changed to whatever you wish to use as a comment indicator.
 		// When it is encountered, commentString and everything to the right of it will be ignored.
 		String commentString = "//";
+		int inputLineCount = 0;
 		List<String> inAl;
+		List<String> outAL = new ArrayList<>();
 		MAIN_LOGGER.log( Level.FINEST, "readFile() is opening {0}, and using {1} as a comment marker.", new Object[]{ inFileName, commentString } );
 
 		// Attempt to open the file using the Java 8 Files class.  This ensures it will close automatically.
@@ -72,10 +77,8 @@ public class JavaReadFile
 			MAIN_LOGGER.log( Level.WARNING, "IO Exception when opening input file: " + inFileName );
 			MAIN_LOGGER.log( Level.WARNING, e.getLocalizedMessage() );
 			// Return an empty ArrayList to avoid NPEs in the calling method.
-			return new ArrayList<>();
+			return outAL;
 		}
-		List<String> outAL = new ArrayList<>();
-		int inputLineCount = 0;
 
 		// Read lines until EOF.
 		for( String line : inAl )
