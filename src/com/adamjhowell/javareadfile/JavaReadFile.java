@@ -19,8 +19,8 @@ public class JavaReadFile
 
 
 	/**
-	 * This is a simple driver to read in a text file and write the contents to the screen.
-	 * Note that this will read the entire file into memory.  So this should not be used for very large files.
+	 * This is a simple driver to read in a text file in 3 different ways, and print the contents to the screen.
+	 * Note that this will read the entire file into memory, three times, so this should not be used for very large files.
 	 *
 	 * @param args element zero must be the name of a text file to read.
 	 */
@@ -33,10 +33,12 @@ public class JavaReadFile
 
 		if( args.length > 0 )
 		{
-			List<String> inAl = readFileToList( args[0] );
-			if( !inAl.isEmpty() )
+			List<String> inAl1 = readFileToList( args[0] );
+			List<String> inAl2 = bufferedReadFileToList( args[0] );
+			String inString = readFileToString( args[0] );
+			if( !inAl1.isEmpty() )
 			{
-				for( String line : inAl )
+				for( String line : inAl1 )
 				{
 					System.out.println( line );
 				}
@@ -47,6 +49,15 @@ public class JavaReadFile
 				System.out.println( logString );
 				MAIN_LOGGER.log( Level.SEVERE, logString );
 			}
+			if( inAl1.containsAll( inAl2 ) )
+			{
+				System.out.println( "readFileToList() and bufferedReadFileToList() match!" );
+			}
+			else
+			{
+				System.out.println( "readFileToList() and bufferedReadFileToList() do not match!" );
+			}
+			System.out.println( inString );
 		}
 		else
 		{
@@ -64,7 +75,7 @@ public class JavaReadFile
 	 * @param inFileName a string representing the file name to open.
 	 * @return an ArrayList containing every significant line from the input file, or an empty ArrayList.
 	 */
-	private static List<String> readFileToList( String inFileName )
+	static List<String> readFileToList( String inFileName )
 	{
 		String logString = "readFileToList()";
 		MAIN_LOGGER.log( Level.FINE, logString );
@@ -141,7 +152,7 @@ public class JavaReadFile
 	 * @param inFileName a string representing the file name to open.
 	 * @return an ArrayList containing every non-empty line from the input file, or an empty List if the file could not be opened.
 	 */
-	private static List<String> bufferedReadFileToList( String inFileName )
+	static List<String> bufferedReadFileToList( String inFileName )
 	{
 		String logString = "bufferedReadFileToList()";
 		MAIN_LOGGER.log( Level.FINE, logString );
