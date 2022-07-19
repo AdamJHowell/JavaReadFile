@@ -1,2 +1,8 @@
 # JavaReadFile
+
 Boilerplate to read text files.
+
+This class contains multiple methods which show different ways to read text files in Java.
+The method names, while long, describe the technique used and the output.
+
+The readAllLinesToList() and readAllBytesToString() methods require Java 7.

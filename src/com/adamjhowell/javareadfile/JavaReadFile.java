@@ -8,19 +8,27 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
+/**
+ * This class contains multiple methods which show different ways to read text files in Java.
+ * The method names, while long, describe the technique used and the output.
+ * The readAllLinesToList() and readAllBytesToString() methods require Java 7.
+ *
+ * @version JDK 1.7
+ */
 public class JavaReadFile
 {
 	private static final Logger MAIN_LOGGER = Logger.getLogger( JavaReadFile.class.getName() );
 
 
 	/**
-	 * This is a simple driver to read in a text file in 3 different ways, and print the contents to the screen.
-	 * Note that this will read the entire file into memory, three times, so this should not be used for very large files.
+	 * main() is only meant to show one way to call each method.
+	 * Note that this will read the entire file into memory, three times, so be mindful of memory concerns.
 	 *
 	 * @param args element zero must be the name of a text file to read.
 	 */
@@ -33,51 +41,43 @@ public class JavaReadFile
 
 		if( args.length > 0 )
 		{
-			List<String> inAl1 = readFileToList( args[0] );
-			List<String> inAl2 = bufferedReadFileToList( args[0] );
-			String inString = readFileToString( args[0] );
+			List<String> inAl1 = readAllLinesToList( args[0] );
+			List<String> inAl2 = bufferedReaderReadLineToList( args[0] );
+			String inString = readAllBytesToString( args[0] );
+
 			if( !inAl1.isEmpty() )
-			{
 				for( String line : inAl1 )
-				{
 					System.out.println( line );
-				}
-			}
 			else
 			{
 				logString = "The input file: " + args[0] + ", was empty or did not exist.";
 				System.out.println( logString );
 				MAIN_LOGGER.log( Level.SEVERE, logString );
 			}
-			if( inAl1.containsAll( inAl2 ) )
-			{
-				System.out.println( "readFileToList() and bufferedReadFileToList() match!" );
-			}
+			if( new HashSet<>( inAl1 ).containsAll( inAl2 ) )
+				System.out.println( "\nreadAllLinesToList() and bufferedReaderReadLineToList() match!\n" );
 			else
-			{
-				System.out.println( "readFileToList() and bufferedReadFileToList() do not match!" );
-			}
+				System.out.println( "\nreadAllLinesToList() and bufferedReaderReadLineToList() do not match!\n" );
 			System.out.println( inString );
 		}
 		else
-		{
-			System.out.println( "Please enter the name of the file to read at the command line." );
-		}
+			System.out.println( "Please enter the name of the input file as a command line argument." );
 	} // End of main() method.
 
 
 	/**
-	 * readFileToList() opens a file and returns an ArrayList of Strings.
-	 * Empty lines are ignored.
-	 * Commented substrings are ignored.
-	 * Zero-length lines are ignored.
+	 * readAllLinesToList() opens a file and returns a List of Strings.
+	 * Each element in the List represents one line.
+	 * Empty lines are not added to the output List.
+	 * Commented substrings are not added to the output List.
+	 * Zero-length lines are not added to the output List.
 	 *
 	 * @param inFileName a string representing the file name to open.
 	 * @return an ArrayList containing every significant line from the input file, or an empty ArrayList.
 	 */
-	static List<String> readFileToList( String inFileName )
+	static List<String> readAllLinesToList( String inFileName )
 	{
-		String logString = "readFileToList()";
+		String logString = "readAllLinesToList()";
 		MAIN_LOGGER.log( Level.FINE, logString );
 		// commentString can be changed to whatever you wish to use as a comment indicator.
 		// When it is encountered, commentString and everything to the right of it will be ignored.
@@ -85,42 +85,36 @@ public class JavaReadFile
 		int inputLineCount = 0;
 		List<String> inAl;
 		List<String> outAL = new ArrayList<>();
-		logString = "readFileToList() is opening \"" + inFileName + "\", and using " + commentString + " as a comment marker.";
+		logString = "readAllLinesToList() is opening \"" + inFileName + "\", and using " + commentString + " as a comment marker.";
 		MAIN_LOGGER.log( Level.FINE, logString );
 
-		// Attempt to open the file using the Java 8 Files class.  This ensures it will close automatically.
+		// Attempt to open the file using the Java 7 Files class, which will close the file automatically.
 		try
 		{
 			inAl = Files.readAllLines( Paths.get( inFileName ) );
 		}
-		catch( IOException e )
+		catch( IOException ioException )
 		{
-			logString = "IO Exception when opening input file: " + inFileName;
+			logString = "readAllLinesToList() threw an IOException reading " + inFileName + ": " + ioException.getLocalizedMessage();
 			MAIN_LOGGER.log( Level.SEVERE, logString );
-			MAIN_LOGGER.log( Level.SEVERE, e.getLocalizedMessage() );
-			// Return an empty ArrayList to avoid NPEs in the calling method.
 			return outAL;
 		}
 
-		// Read lines until EOF.
 		for( String line : inAl )
 		{
 			inputLineCount++;
 			// Check for comments.
 			if( line.contains( commentString ) )
 			{
-				// Grab all of the text up to the comment.
+				// Grab all text up to the comment.
 				String subString = line.substring( 0, line.indexOf( commentString ) ).trim();
 
 				// Only add lines with content.
 				if( subString.length() > 0 )
-				{
-					// Add the line to our ArrayList.
 					outAL.add( subString );
-				}
 				else
 				{
-					logString = "readFileToList() is skipping a line that has only comments at row " + inputLineCount;
+					logString = "readAllLinesToList() is skipping a line that has only comments at row " + inputLineCount;
 					MAIN_LOGGER.log( Level.FINEST, logString );
 				}
 			}
@@ -128,63 +122,57 @@ public class JavaReadFile
 			{
 				// Ignore empty lines and lines that contain only whitespace.
 				if( line.length() > 0 && !line.matches( "\\s+" ) )
-				{
-					// Add the line to our ArrayList.
 					outAL.add( line.trim() );
-				}
 				else
 				{
-					logString = "readFileToList() is skipping a zero length line at row " + inputLineCount;
+					logString = "readAllLinesToList() is skipping a zero length line at row " + inputLineCount;
 					MAIN_LOGGER.log( Level.FINEST, logString );
 				}
 			}
 		}
 		return outAL;
-	} // End of readFileToList() method.
+	} // End of readAllLinesToList() method.
 
 
 	/**
-	 * bufferedReadFileToList() reads a file and returns each uncommented line with a length greater than 0.
-	 * Empty lines are ignored.
-	 * Commented substrings are ignored.
-	 * Zero-length lines are ignored.
+	 * bufferedReaderReadLineToList() opens a file and returns a List of Strings.
+	 * Each element in the List represents one line.
+	 * Empty lines are not added to the output List.
+	 * Commented substrings are not added to the output List.
+	 * Zero-length lines are not added to the output List.
 	 *
 	 * @param inFileName a string representing the file name to open.
 	 * @return an ArrayList containing every non-empty line from the input file, or an empty List if the file could not be opened.
 	 */
-	static List<String> bufferedReadFileToList( String inFileName )
+	static List<String> bufferedReaderReadLineToList( String inFileName )
 	{
-		String logString = "bufferedReadFileToList()";
+		String logString = "bufferedReaderReadLineToList()";
 		MAIN_LOGGER.log( Level.FINE, logString );
 		// commentString can be changed to whatever you wish to use as a comment indicator.  When this String is encountered, the rest of the line will be ignored.
 		String commentString = "//";
 		List<String> inAl = new ArrayList<>();
 
-		// Attempt to open the file using "try with resources", to ensure it will close automatically.
+		// Open the file using try-with-resources.
 		try( BufferedReader inBR = new BufferedReader( new FileReader( inFileName ) ) )
 		{
 			String line;
 			int inputLineCount = 0;
 
-			// Read lines until EOF.
 			while( ( line = inBR.readLine() ) != null )
 			{
 				inputLineCount++;
 				// Check for comments.
 				if( line.contains( commentString ) )
 				{
-					// Grab all of the text up to the comment.
+					// Grab all text up to the comment.
 					String subString = line.substring( 0, line.indexOf( commentString ) );
 
 					// Only add lines with content.
 					if( subString.length() > 0 )
-					{
-						// Add the line to our ArrayList.
 						inAl.add( subString );
-					}
 					else
 					{
-						logString = "bufferedReadFileToList() is skipping a line that has only comments at row " + inputLineCount;
+						logString = "bufferedReaderReadLineToList() is skipping a line that has only comments at row " + inputLineCount;
 						MAIN_LOGGER.log( Level.FINE, logString );
 					}
 				}
@@ -192,49 +180,46 @@ public class JavaReadFile
 				{
 					// Ignore empty lines and lines that contain only whitespace.
 					if( line.length() > 0 && !line.matches( "\\s+" ) )
-					{
-						// Add the line to our ArrayList.
 						inAl.add( line.trim() );
-					}
 					else
 					{
-						logString = "bufferedReadFileToList is skipping a zero length line at row " + inputLineCount;
+						logString = "bufferedReaderReadLineToList is skipping a zero length line at row " + inputLineCount;
 						MAIN_LOGGER.log( Level.FINE, logString );
 					}
 				}
 			}
 		}
-		catch( IOException ioe )
+		catch( IOException ioException )
 		{
-			logString = ioe.getLocalizedMessage();
+			logString = "bufferedReaderReadLineToList() threw an IOException: " + ioException.getLocalizedMessage();
 			MAIN_LOGGER.log( Level.SEVERE, logString );
 		}
 		return inAl;
-	} // End of bufferedReadFileToList() method.
+	} // End of bufferedReaderReadLineToList() method.
 
 
 	/**
-	 * readFileToString() takes a file name and returns the contents in one large String.
+	 * readAllBytesToString() takes a file name and returns the contents in one large String.
 	 *
 	 * @param inFileName the path to the file to read.
 	 * @return a String that represents the contents of the file.
 	 */
-	static String readFileToString( String inFileName )
+	static String readAllBytesToString( String inFileName )
 	{
-		String logString = "readFileToString()";
+		String logString = "readAllBytesToString()";
 		MAIN_LOGGER.log( Level.FINE, logString );
 
-		byte[] encoded = new byte[0];
+		byte[] byteArray = new byte[0];
+		// Attempt to open the file using the Java 7 Files class, which will close the file automatically.
 		try
 		{
-			encoded = Files.readAllBytes( Paths.get( inFileName ) );
+			byteArray = Files.readAllBytes( Paths.get( inFileName ) );
 		}
-		catch( IOException ioe )
+		catch( IOException ioException )
 		{
-			logString = "readFileToString() threw an IOException: " + ioe.toString();
+			logString = "readAllBytesToString() threw an IOException: " + ioException.getLocalizedMessage();
 			MAIN_LOGGER.log( Level.SEVERE, logString );
-			ioe.printStackTrace();
 		}
-		return new String( encoded, StandardCharsets.UTF_8 );
-	} // End of readFileToString() method.
+		return new String( byteArray, StandardCharsets.UTF_8 );
+	} // End of readAllBytesToString() method.
 }
