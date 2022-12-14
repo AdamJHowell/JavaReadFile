@@ -6,3 +6,5 @@ This class contains multiple methods which show different ways to read text file
 The method names, while long, describe the technique used and the output.
 
 The readAllLinesToList() and readAllBytesToString() methods require Java 7.
+
+[![CodeFactor](https://www.codefactor.io/repository/github/adamjhowell/javareadfile/badge)](https://www.codefactor.io/repository/github/adamjhowell/javareadfile)
